@@ -394,12 +394,15 @@ commands:
             - ~/.cargo/bin/xtask
             - ~/.cargo/bin/xtask.exe
 
-  xtask_lint:
+  lint:
     steps:
       - restore_cache:
           keys:
             - "<< pipeline.parameters.merge_version >>-lint"
-      - run: xtask lint
+      - run: cargo fmt --all --check
+      - run: cd xtask && cargo fmt --all --check
+      - run: cargo clippy --all --all-targets --no-deps -- -D warnings
+      - run: RUSTDOCFLAGS="-Dwarnings" cargo doc --all --no-deps
       - when:
           condition:
             equal: [ "dev", "<< pipeline.git.branch >>" ]
@@ -534,7 +537,7 @@ jobs:
       - checkout
       - setup_environment:
           platform: << parameters.platform >>
-      - xtask_lint
+      - lint
 
   check_helm:
     environment:
