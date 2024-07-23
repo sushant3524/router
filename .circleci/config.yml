@@ -103,6 +103,9 @@ commands:
     parameters:
       platform:
         type: executor
+      xtask:
+        type: boolean
+        default: true
     steps:
       - unify_environment:
           platform: << parameters.platform >>
@@ -124,7 +127,10 @@ commands:
             - ~/.cargo
             - ~/.rustup
             - ~/.local
-      - install_xtask
+      - when:
+          condition: << parameters.xtask >>
+          steps:
+            - install_xtask
 
   # Even though all executors use bash there are a number of differences that can be taken care of up front.
   # Windows shell commands are found on the path before the linux subsystem commands, so use aliases to override.
@@ -535,6 +541,7 @@ jobs:
       - checkout
       - setup_environment:
           platform: << parameters.platform >>
+          xtask: false
       - lint
 
   check_helm:
@@ -563,6 +570,7 @@ jobs:
       - checkout
       - setup_environment:
           platform: << parameters.platform >>
+      - install_extra_tools
       - xtask_check_compliance
 
   test:
