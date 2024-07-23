@@ -99,7 +99,6 @@ common_job_environment: &common_job_environment
   RUST_BACKTRACE: full
   CARGO_INCREMENTAL: 0
 commands:
-
   setup_environment:
     parameters:
       platform:
@@ -117,7 +116,6 @@ commands:
           platform: << parameters.platform >>
       - install_rust:
           platform: << parameters.platform >>
-      - install_extra_tools
       - fetch_dependencies
       - save_cache:
           key: "<< pipeline.parameters.toolchain_version >>"
@@ -614,6 +612,7 @@ jobs:
       - checkout
       - setup_environment:
           platform: << parameters.platform >>
+      - install_extra_tools
       - xtask_release_preverify
 
   build_release:
@@ -633,6 +632,7 @@ jobs:
       - checkout
       - setup_environment:
           platform: << parameters.platform >>
+      - install_extra_tools
       - when:
           condition:
             or:
