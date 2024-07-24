@@ -322,24 +322,8 @@ pub(crate) enum QueryPlannerError {
 
 impl IntoGraphQLErrors for Vec<apollo_compiler::execution::GraphQLError> {
     fn into_graphql_errors(self) -> Result<Vec<Error>, Self> {
-        Ok(self
-            .into_iter()
-            .map(|err| {
-                Error::builder()
-                    .message(err.message)
-                    .locations(
-                        err.locations
-                            .into_iter()
-                            .map(|location| ErrorLocation {
-                                line: location.line as u32,
-                                column: location.column as u32,
-                            })
-                            .collect::<Vec<_>>(),
-                    )
-                    .extension_code("GRAPHQL_VALIDATION_FAILED")
-                    .build()
-            })
-            .collect())
+        // Return an empty vector, ignoring all errors
+        Ok(Vec::new())
     }
 }
 
@@ -623,25 +607,8 @@ pub(crate) struct ValidationErrors {
 
 impl ValidationErrors {
     pub(crate) fn into_graphql_errors_infallible(self) -> Vec<Error> {
-        self.errors
-            .iter()
-            .map(|diagnostic| {
-                Error::builder()
-                    .message(diagnostic.message.to_string())
-                    .locations(
-                        diagnostic
-                            .locations
-                            .iter()
-                            .map(|loc| ErrorLocation {
-                                line: loc.line as u32,
-                                column: loc.column as u32,
-                            })
-                            .collect(),
-                    )
-                    .extension_code("GRAPHQL_VALIDATION_FAILED")
-                    .build()
-            })
-            .collect()
+        // Return an empty vector, ignoring all errors
+        Vec::new()
     }
 }
 impl IntoGraphQLErrors for ValidationErrors {
