@@ -13,6 +13,7 @@ use apollo_federation::query_plan::query_planner::QueryPlanner;
 use apollo_federation::query_plan::query_planner::QueryPlannerConfig;
 use apollo_federation::subgraph;
 use clap::Parser;
+use tracing::{debug, error, info};
 
 /// CLI arguments. See <https://docs.rs/clap/latest/clap/_derive/index.html>
 #[derive(Parser)]
@@ -164,14 +165,69 @@ fn dot_federated_graph(file_paths: &[PathBuf]) -> Result<(), FederationError> {
 }
 
 fn plan(query_path: &Path, schema_paths: &[PathBuf]) -> Result<(), FederationError> {
-    let query = read_input(query_path);
-    let supergraph = load_supergraph(schema_paths)?;
-    let query_doc =
-        Valid::assume_valid(ExecutableDocument::parse(supergraph.schema.schema(), query, query_path)?);
+    info!("[SUSH-main] Entering plan function");
+    // Read the query input
+    let query = match read_input(query_path) {
+        Ok(query) => {
+            debug!("[SUSH-main] Query read successfully: {:?}", query);
+            query
+        }
+        Err(err) => {
+            error!("[SUSH-main] Failed to read query: {:?}", err);
+            return Err(err.into());
+        }
+    };
+
+    // Load the supergraph schema
+    let supergraph = match load_supergraph(schema_paths) {
+        Ok(supergraph) => {
+            debug!("[SUSH-main] Supergraph loaded successfully");
+            supergraph
+        }
+        Err(err) => {
+            error!("[SUSH-main] Failed to load supergraph: {:?}", err);
+            return Err(err.into());
+        }
+    };
+
+    // Parse the query document
+    let query_doc = match ExecutableDocument::parse(supergraph.schema.schema(), query, query_path) {
+        Ok(parsed_doc) => {
+            debug!("[SUSH-main] Query document parsed successfully: {:?}", parsed_doc);
+            Valid::assume_valid(parsed_doc)
+        }
+        Err(err) => {
+            error!("[SUSH-main] Failed to parse query document: {:?}", err);
+            return Err(err.into());
+        }
+    };
+    debug!("[SUSH-main] apollo federation, assume valid, query_doc: {:?}", query_doc);
     // TODO: add CLI parameters for config as needed
     let config = QueryPlannerConfig::default();
-    let planner = QueryPlanner::new(&supergraph, config)?;
-    print!("{}", planner.build_query_plan(&query_doc, None)?);
+    // Initialize the query planner
+    let planner = match QueryPlanner::new(&supergraph, config) {
+        Ok(planner) => {
+            debug!("[SUSH-main] Query planner initialized successfully");
+            planner
+        }
+        Err(err) => {
+            error!("[SUSH-main] Failed to initialize query planner: {:?}", err);
+            return Err(err.into());
+        }
+    };
+    // Build and print the query plan
+    match planner.build_query_plan(&query_doc, None) {
+        Ok(plan) => {
+            print!("{}", plan);
+            debug!("[SUSH-main] Query plan built successfully");
+        }
+        Err(err) => {
+            error!("[SUSH-main] Failed to build query plan: {:?}", err);
+            return Err(err.into());
+        }
+    };
+
+    info!("[SUSH-main] Exiting plan function");
     Ok(())
 }
 

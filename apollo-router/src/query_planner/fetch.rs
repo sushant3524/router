@@ -10,7 +10,7 @@ use indexmap::IndexSet;
 use serde::Deserialize;
 use serde::Serialize;
 use tower::ServiceExt;
-use tracing::instrument;
+use tracing::{debug, error, info, instrument};
 use tracing::Instrument;
 
 use super::execution::ExecutionParameters;
@@ -174,15 +174,28 @@ impl SubgraphOperation {
         &mut self,
         subgraph_schema: &Valid<apollo_compiler::Schema>,
     ) -> Result<&Arc<Valid<ExecutableDocument>>, ValidationErrors> {
+        info!("[SUSH-fetch] Entering init_parsed method");
         match &mut self.parsed {
-            Some(parsed) => Ok(parsed),
+            Some(parsed) => {
+                info!("[SUSH-fetch] parsed is already initialized");
+                Ok(parsed)
+            }
             option => {
-                let parsed = Arc::new(Valid::assume_valid(ExecutableDocument::parse(
-                    subgraph_schema,
-                    &self.serialized,
-                    "operation.graphql",
-                )?));
-                Ok(option.insert(parsed))
+                info!("[SUSH-fetch] parsed is not initialized, attempting to parse");
+                match ExecutableDocument::parse(subgraph_schema, &self.serialized, "operation.graphql") {
+                    Ok(parsed_doc) => {
+                        debug!("[SUSH-fetch] parse successful: {:?}", parsed_doc);
+
+                        let parsed = Arc::new(Valid::assume_valid(parsed_doc));
+                        info!("[SUSH-fetch] parsed value initialized and wrapped in Arc and Valid");
+
+                        Ok(option.insert(parsed))
+                    }
+                    Err(err) => {
+                        error!("[SUSH-fetch] parse failed: {:?}", err);
+                        Err(ValidationErrors::from(err))
+                    }
+                }
             }
         }
     }
