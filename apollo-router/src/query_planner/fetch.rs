@@ -177,11 +177,11 @@ impl SubgraphOperation {
         match &mut self.parsed {
             Some(parsed) => Ok(parsed),
             option => {
-                let parsed = Arc::new(ExecutableDocument::parse_and_validate(
+                let parsed = Arc::new(Valid::assume_valid(ExecutableDocument::parse(
                     subgraph_schema,
                     &self.serialized,
                     "operation.graphql",
-                )?);
+                )?));
                 Ok(option.insert(parsed))
             }
         }

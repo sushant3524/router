@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use apollo_compiler::ExecutableDocument;
+use apollo_compiler::validation::Valid;
 use apollo_federation::error::FederationError;
 use apollo_federation::error::SingleFederationError;
 use apollo_federation::query_graph;
@@ -166,7 +167,7 @@ fn plan(query_path: &Path, schema_paths: &[PathBuf]) -> Result<(), FederationErr
     let query = read_input(query_path);
     let supergraph = load_supergraph(schema_paths)?;
     let query_doc =
-        ExecutableDocument::parse_and_validate(supergraph.schema.schema(), query, query_path)?;
+        Valid::assume_valid(ExecutableDocument::parse(supergraph.schema.schema(), query, query_path)?);
     // TODO: add CLI parameters for config as needed
     let config = QueryPlannerConfig::default();
     let planner = QueryPlanner::new(&supergraph, config)?;
