@@ -11,11 +11,11 @@ pub(crate) fn document(
     operation_name: Option<&str>,
 ) -> Result<(), BoxError> {
     if let Ok(operation) = document.get_operation(operation_name) {
-        visitor.operation(operation.object_type().as_str(), operation)?;
+        let _ = visitor.operation(operation.object_type().as_str(), operation);
     }
 
     for fragment in document.fragments.values() {
-        visitor.fragment(fragment)?;
+        let _ = visitor.fragment(fragment);
     }
 
     Ok(())
