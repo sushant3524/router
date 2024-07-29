@@ -139,30 +139,34 @@ pub(crate) fn selection_set(
     parent_type: &str,
     set: &[executable::Selection],
 ) -> Result<(), BoxError> {
-    set.iter().try_for_each(|def| match def {
-        executable::Selection::Field(def) => {
-            let field_def = &visitor
-                .schema()
-                .type_field(parent_type, &def.name)
-                .map_err(|e| match e {
-                    FieldLookupError::NoSuchType => format!("type `{parent_type}` not defined"),
-                    FieldLookupError::NoSuchField(_, _) => {
-                        format!("no field `{}` in type `{parent_type}`", &def.name)
+    for def in set {
+        match def {
+            executable::Selection::Field(def) => {
+                if let Ok(field_def) = visitor.schema().type_field(parent_type, &def.name) {
+                    let field_def = field_def.clone();
+                    if let Err(_) = visitor.field(parent_type, &field_def, def) {
+                        // Ignore the error and continue
                     }
-                })?
-                .clone();
-            visitor.field(parent_type, field_def, def)
+                }
+            }
+            executable::Selection::FragmentSpread(def) => {
+                if let Err(_) = visitor.fragment_spread(def) {
+                    // Ignore the error and continue
+                }
+            }
+            executable::Selection::InlineFragment(def) => {
+                let fragment_type = def
+                    .type_condition
+                    .as_ref()
+                    .map(|s| s.as_str())
+                    .unwrap_or(parent_type);
+                if let Err(_) = visitor.inline_fragment(fragment_type, def) {
+                    // Ignore the error and continue
+                }
+            }
         }
-        executable::Selection::FragmentSpread(def) => visitor.fragment_spread(def),
-        executable::Selection::InlineFragment(def) => {
-            let fragment_type = def
-                .type_condition
-                .as_ref()
-                .map(|s| s.as_str())
-                .unwrap_or(parent_type);
-            visitor.inline_fragment(fragment_type, def)
-        }
-    })
+    }
+    Ok(())
 }
 
 #[test]

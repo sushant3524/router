@@ -207,23 +207,16 @@ pub(crate) fn selection_set(
     for sel in set {
         match sel {
             ast::Selection::Field(def) => {
-                let field_def = visitor
-                    .schema()
-                    .type_field(parent_type, &def.name)
-                    .map_err(|e| match e {
-                        FieldLookupError::NoSuchType => format!("type `{parent_type}` not defined"),
-                        FieldLookupError::NoSuchField(_, _) => {
-                            format!("no field `{}` in type `{parent_type}`", &def.name)
-                        }
-                    })?
-                    .clone();
-                if let Some(sel) = visitor.field(parent_type, &field_def, def)? {
-                    selections.push(ast::Selection::Field(sel.into()))
+                if let Ok(field_def) = visitor.schema().type_field(parent_type, &def.name) {
+                    let field_def = field_def.clone();
+                    if let Ok(Some(sel)) = visitor.field(parent_type, &field_def, def) {
+                        selections.push(ast::Selection::Field(sel.into()));
+                    }
                 }
             }
             ast::Selection::FragmentSpread(def) => {
-                if let Some(sel) = visitor.fragment_spread(def)? {
-                    selections.push(ast::Selection::FragmentSpread(sel.into()))
+                if let Ok(Some(sel)) = visitor.fragment_spread(def) {
+                    selections.push(ast::Selection::FragmentSpread(sel.into()));
                 }
             }
             ast::Selection::InlineFragment(def) => {
@@ -232,8 +225,8 @@ pub(crate) fn selection_set(
                     .as_ref()
                     .map(|s| s.as_str())
                     .unwrap_or(parent_type);
-                if let Some(sel) = visitor.inline_fragment(fragment_type, def)? {
-                    selections.push(ast::Selection::InlineFragment(sel.into()))
+                if let Ok(Some(sel)) = visitor.inline_fragment(fragment_type, def) {
+                    selections.push(ast::Selection::InlineFragment(sel.into()));
                 }
             }
         }
