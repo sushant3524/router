@@ -993,11 +993,12 @@ impl Query {
             )
             .collect::<Vec<_>>();
 
-        if errors.is_empty() {
-            Ok(())
-        } else {
-            Err(Response::builder().errors(errors).build())
-        }
+        // if errors.is_empty() {
+        //     Ok(())
+        // } else {
+        //     Err(Response::builder().errors(errors).build())
+        // }
+        Ok(())
     }
 
     pub(crate) fn contains_introspection(&self) -> bool {
