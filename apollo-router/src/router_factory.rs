@@ -765,6 +765,7 @@ fn can_use_with_experimental_query_planner(
     configuration: Arc<Configuration>,
     schema: Arc<Schema>,
 ) -> Result<(), ConfigurationError> {
+    tracing::info!("[TEST-SUSH] config_mode experimental_query_planner_mode 768");
     match configuration.experimental_query_planner_mode {
         crate::configuration::QueryPlannerMode::New
         | crate::configuration::QueryPlannerMode::Both => {

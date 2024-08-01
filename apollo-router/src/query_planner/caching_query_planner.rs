@@ -122,6 +122,7 @@ where
         let enable_authorization_directives =
             AuthorizationPlugin::enable_directives(configuration, &schema).unwrap_or(false);
 
+        tracing::info!("[TEST-SUSH] config_mode experimental_query_planner_mode 125");
         let config_mode = match configuration.experimental_query_planner_mode {
             crate::configuration::QueryPlannerMode::New => {
                 ConfigMode::Rust(Arc::new(configuration.js_query_planner_config()))
@@ -133,6 +134,7 @@ where
                 ConfigMode::Both(Arc::new(configuration.js_query_planner_config()))
             }
         };
+        tracing::info!("[TEST-SUSH] config_mode experimental_query_planner_mode : {:?}", config_mode);
         Ok(Self {
             cache,
             delegate,

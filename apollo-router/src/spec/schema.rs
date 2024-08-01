@@ -119,7 +119,7 @@ impl Schema {
             "Time spent loading the supergraph schema.",
             start.elapsed().as_secs_f64()
         );
-
+        tracing::info!("[TEST-SUSH] config_mode experimental_query_planner_mode 122, {:?}", config.experimental_query_planner_mode);
         let implementers_map = definitions.implementers_map();
         let legacy_only = config.experimental_query_planner_mode == QueryPlannerMode::Legacy
             && config.experimental_api_schema_generation_mode == ApiSchemaMode::Legacy;

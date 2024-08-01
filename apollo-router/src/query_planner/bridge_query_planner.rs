@@ -111,6 +111,7 @@ impl PlannerMode {
         configuration: &Configuration,
         old_planner: Option<Arc<Planner<QueryPlanResult>>>,
     ) -> Result<Self, ServiceBuildError> {
+        tracing::info!("[TEST-SUSH] experimental_query_planner_mode 114");
         Ok(match configuration.experimental_query_planner_mode {
             QueryPlannerMode::New => Self::Rust {
                 js_for_api_schema_and_introspection_and_operation_signature: Self::js(
@@ -174,6 +175,7 @@ impl PlannerMode {
     fn js_for_api_schema_and_introspection_and_operation_signature(
         &self,
     ) -> &Arc<Planner<QueryPlanResult>> {
+        tracing::info!("[TEST-SUSH] js_for_api_schema_and_introspection_and_operation_signature 178");
         match self {
             PlannerMode::Js(js) => js,
             PlannerMode::Both { js, .. } => js,
