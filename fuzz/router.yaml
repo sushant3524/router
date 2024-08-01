@@ -4,7 +4,7 @@ supergraph:
 plugins:
   experimental.expose_query_plan: true
   apollo-test.expose_referenced_fields_by_type: true
-experimental_graphql_validation_mode: both
+experimental_graphql_validation_mode: new
 sandbox:
   enabled: true
 homepage:
